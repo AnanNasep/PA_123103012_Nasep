@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Website Monitoring Asinkron</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    #log { white-space: pre; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ccc; height: 300px; overflow-y: auto; }
+    .down { color: red; font-weight: bold; }
+    .ok { color: green; }
+  </style>
+</head>
+<body>
+  <h2>Monitoring Website Asinkron</h2>
+  <div id="log"></div>
+
+  <script>
+    const websites = [
+      "https://openai.com",
+      "https://example.com",
+      "https://github.com",
+      "https://google.com",
+      "https://youtube.com"
+    ];
+
+    const logDiv = document.getElementById("log");
+
+    function playAlertSound() {
+      const audio = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YYQAAAD///8=");
+      audio.play();
+    }
+
+    async function checkWebsite(url) {
+      const now = new Date().toLocaleString();
+      try {
+        const response = await fetch(url, { mode: "no-cors" }); // "no-cors" may show opaque response
+        const status = response.status || 200; // browsers may return opaque with no status
+        const statusText = status === 200 ? 'OK' : `SITE DOWN!`;
+        const line = `[${now}] ${url} - Status: ${status} ${status !== 200 ? 'SITE DOWN!' : ''}`;
+        
+        const span = document.createElement("div");
+        span.textContent = line;
+        span.className = status === 200 ? "ok" : "down";
+        logDiv.appendChild(span);
+        
+        
+        if (status !== 200) playAlertSound();
+      } catch (error) {
+        const line = `[${now}] ${url} - ERROR: ${error.message}`;
+        const span = document.createElement("div");
+        span.textContent = line;
+        span.className = "down";
+        logDiv.appendChild(span);
+        playAlertSound();
+      }
+      
+      // Auto-scroll
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+    i = 1
+    async function monitor() {
+      for (const site of websites) {
+        checkWebsite(site);
+      }
+      logDiv.append("Check yang ke:" + i);
+      i++
+    }
+
+    monitor(); // run on load
+    setInterval(monitor, 10000); // every 10 seconds
+  </script>
+</body>
+</html>
